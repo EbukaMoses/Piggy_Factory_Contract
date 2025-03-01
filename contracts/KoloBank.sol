@@ -65,7 +65,8 @@ contract KoloBank {
 
     //function to save token
     function saveToken(uint256 _tokenId, uint256 _amount) external {
-        address _tokenAddr = tokenDetailMap[_tokenId].tokenAddr;
+        Tokens tokenId = Tokens(_tokenId);
+        address _tokenAddr = tokenDetailMap[tokenId].tokenAddr;
         if (_tokenId > 0 && _tokenId < 4) revert TOKEN_NOT_ACCEPTED();
         if (_amount == 0) revert AMOUNT_NOT_ACCEPTED();
         if (msg.sender == address(0)) revert CUSTOMER_ADDRESS_NOT_ACCEPTED();
@@ -74,14 +75,14 @@ contract KoloBank {
         if (block.timestamp > duedate) revert SAVINGS_CLOSED();
         IERC20(_tokenAddr).transferFrom(msg.sender, address(this), _amount); //tranfering _amoumt to the customer account
 
-        tokenDetailMap[_tokenId].balance += _amount;
+        tokenDetailMap[tokenId].balance += _amount;
 
         emit Save(address(this), _amount);
     }
 
     function withdrawToken(uint256 _tokenId) external onlyOwner isWithDrawn {
-        address _tokenAddr = tokenDetailMap[_tokenId].tokenAddr;
-        uint256 _balance = tokenDetailMap[_tokenId].balance;
+        Tokens tokenId = Tokens(_tokenId);
+        address _tokenAddr = tokenDetailMap[tokenId].tokenAddr;
 
         // Check if the contract balance for the token is zero
         uint256 contractBal = IERC20(_tokenAddr).balanceOf(address(this));
