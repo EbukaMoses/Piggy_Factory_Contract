@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.28;
 
-import "./Piggy.sol";
+import "./KoloBank.sol";
 
 contract KoloFactory {
     address public immutable developerAddress;
@@ -19,7 +19,7 @@ contract KoloFactory {
         string memory _purpose,
         uint256 duedate
     ) external view returns (bytes memory) {
-        bytes memory _bytecode = type(PiggyCA).creationCode;
+        bytes memory _bytecode = type(KoloBank).creationCode;
         return
             abi.encodePacked(
                 _bytecode,
