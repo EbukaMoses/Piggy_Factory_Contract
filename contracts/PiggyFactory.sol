@@ -1,11 +1,56 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.28;
+//SPDX-License-Identifier: MIT
 
-contract PiggyFactory {
-    mapping(address => bool) public supportedTokens;
+pragma solidity 0.8.28;
 
-    mapping(address => address[]) public savings;
+import "./Piggy.sol";
 
+contract KoloFactory {
+    address public immutable developerAddress;
+    uint256 public piggyCount;
+    error youHaveFailed();
 
-    function save( )
+    constructor() {
+        developerAddress = msg.sender;
+    }
+
+    mapping(address => address[]) public userDeployedContracts;
+
+    function getPiggyByteCode(
+        string memory _purpose,
+        uint256 duedate
+    ) external view returns (bytes memory) {
+        bytes memory _bytecode = type(PiggyCA).creationCode;
+        return
+            abi.encodePacked(
+                _bytecode,
+                abi.encode(_purpose, duedate, msg.sender, developerAddress)
+            );
+    }
+
+    function createPiggy(bytes memory _bytecode) external returns (address) {
+        bytes32 salt = keccak256(abi.encodePacked(msg.sender, piggyCount));
+        piggyCount++;
+
+        address piggyAddress;
+        assembly {
+            piggyAddress := create2(
+                0,
+                add(_bytecode, 0x20),
+                mload(_bytecode),
+                salt
+            )
+            if iszero(piggyAddress) {
+                revert(0, 0)
+            }
+        }
+
+        userDeployedContracts[msg.sender].push(piggyAddress);
+        return piggyAddress;
+    }
+
+    function getUserDeployedContracts(
+        address user
+    ) external view returns (address[] memory) {
+        return userDeployedContracts[user];
+    }
 }
